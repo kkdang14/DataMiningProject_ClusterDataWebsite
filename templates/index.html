@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <title>Upload</title>
+</head>
+<body>
+    <form method="post" enctype="multipart/form-data" action="/upload">
+        <div class="cluster__file">
+            <label for="file">Upload dataset (CSV/Excel):</label>
+            <input type="file" id="file" name="file">
+        </div>
+
+        <div class="cluster__algorithm">
+            <label for="algorithm">Choose clustering algorithm:</label>
+            <select id="algorithm" name="algorithm">
+                <option value="bottom-up">Bottom-Up (Agglomerative)</option>
+                <option value="top-down">Top-Down (Divisive)</option>
+            </select>
+        </div>
+        <div class="cluster__number">
+            <label for="n-cluster">Number of Cluster</label>
+            <input type="text" id="n-cluster" name="n-cluster">
+        </div>
+        <button type="submit">Cluster</button>
+    </form>
+
+</body>
+</html>
