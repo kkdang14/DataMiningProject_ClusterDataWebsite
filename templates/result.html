@@ -2,9 +2,39 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Result</title>
+    <title>Clustering Result</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style-2.css') }}">
 </head>
 <body>
-    <img src="data:image/png;base64, {{ image }}" alt="Dendrogram" />
+    <h1>Kết quả Phân Cụm: {{ method }}</h1>
+    <div>
+        <h2>Biểu đồ Dendrogram</h2>
+        <img src="{{ plot_url }}" alt="Dendrogram">
+        <button><a href="{{ plot_url }}" download="dendrogram.png">Tải xuống Dendrogram</a></button>
+    </div>
+    <div>
+        <h2>Kết quả Phân Cụm</h2>
+
+        <button class="toggle-button" onclick="toggleTable()">Ẩn/Hiện Bảng Dữ Liệu</button>
+
+        <div class="row-selector">
+            <label for="rowCount">Số dòng hiển thị:</label>
+            <select id="rowCount" onchange="showRows()">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="all">Tất cả</option>
+            </select>
+        </div>
+
+        <div id="cluster-table">
+            {{ table | safe }}
+        </div>
+
+        <button><a href="{{ result_url }}" download="clustering_result.csv">Tải xuống Kết quả</a></button>
+    </div>
+
+    <!-- Liên kết file JavaScript -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

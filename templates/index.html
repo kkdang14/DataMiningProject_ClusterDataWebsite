@@ -2,29 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <title>Upload</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hierarchical Clustering</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <form method="post" enctype="multipart/form-data" action="/upload">
-        <div class="cluster__file">
-            <label for="file">Upload dataset (CSV/Excel):</label>
-            <input type="file" id="file" name="file">
-        </div>
+    <div class="container">
+        <h1>Hierarchical Clustering</h1>
+        <p class="lead">Upload your dataset in CSV or Excel format and choose a clustering method to visualize the dendrogram.</p>
 
-        <div class="cluster__algorithm">
-            <label for="algorithm">Choose clustering algorithm:</label>
-            <select id="algorithm" name="algorithm">
-                <option value="bottom-up">Bottom-Up (Agglomerative)</option>
-                <option value="top-down">Top-Down (Divisive)</option>
-            </select>
-        </div>
-        <div class="cluster__number">
-            <label for="n-cluster">Number of Cluster</label>
-            <input type="text" id="n-cluster" name="n-cluster">
-        </div>
-        <button type="submit">Cluster</button>
-    </form>
+        <!-- Form Upload -->
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="file">Upload CSV or Excel File:</label>
+                <input type="file" name="file" id="file" required>
+            </div>
 
+            <div class="form-group">
+                <label for="num_clusters">Number of Clusters:</label>
+                <input type="text" id="num_clusters" name="num_clusters" required>
+            </div>
+            <!-- Lựa chọn phương pháp clustering -->
+            <div class="form-group">
+                <label for="method">Choose Clustering Method:</label>
+                <select id="method" name="method">
+                    <option value="bottom-up">Bottom-Up (Agglomerative)</option>
+                    <option value="top-down">Top-Down (Divisive)</option>
+                </select>
+            </div>
+
+            <button type="submit">Cluster & Visualize</button>
+        </form>
+    </div>
 </body>
 </html>
