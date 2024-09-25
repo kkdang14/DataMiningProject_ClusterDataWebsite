@@ -112,7 +112,7 @@ def upload_file():
             plt.figure(figsize=(10, 7))
             plt.title(f"{method_name} Clustering Dendrogram")
             dendrogram(Z, color_threshold=max_d)
-            plt.axhline(y=max_d, color='r', linestyle='--')
+            plt.axhline(y=max_d, color='r', linestyle='-')
 
         elif method == 'top-down':
             # Áp dụng custom top-down divisive clustering
