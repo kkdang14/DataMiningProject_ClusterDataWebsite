@@ -7,7 +7,7 @@ from flask import send_file
 import matplotlib
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import pdist, squareform
-import networkx as nx
+# import networkx as nx
 from sklearn.metrics import pairwise_distances
 from scipy.cluster.hierarchy import linkage, dendrogram
 from sklearn.preprocessing import OneHotEncoder
@@ -164,25 +164,25 @@ def upload_file():
             df['Cluster'] = df['Cluster'].map(label_mapping)
             method_name = "Top-Down (Recursive KMeans)"
 
-            def plot_recursive_kmeans_tree(cluster_tree):
-                G = nx.DiGraph()  # Create a directed graph to represent the tree
-
-                # Iterate over the tree structure
-                for depth, parent, child1, child2 in cluster_tree:
-                    G.add_edge(f'Cluster {parent}', f'Cluster {child1}')
-                    G.add_edge(f'Cluster {parent}', f'Cluster {child2}')
-
-                # Set the layout of the tree
-                pos = nx.spring_layout(G, k=2, seed=42)  # You can use different layouts like 'spring_layout', 'tree_layout', etc.
-
-                # Plot the tree
-                plt.figure(figsize=(10, 7))
-                nx.draw(G, pos, with_labels=True, node_size=2000, node_color='skyblue', font_size=10,
-                        font_weight='bold', arrows=False)
-                plt.title("Recursive KMeans Clustering Tree", fontsize=16)
-
-            # After running the recursive_kmeans, call the function:
-            plot_recursive_kmeans_tree(cluster_tree)
+            # def plot_recursive_kmeans_tree(cluster_tree):
+            #     G = nx.DiGraph()  # Create a directed graph to represent the tree
+            #
+            #     # Iterate over the tree structure
+            #     for depth, parent, child1, child2 in cluster_tree:
+            #         G.add_edge(f'Cluster {parent}', f'Cluster {child1}')
+            #         G.add_edge(f'Cluster {parent}', f'Cluster {child2}')
+            #
+            #     # Set the layout of the tree
+            #     pos = nx.spring_layout(G, k=2, seed=42)  # You can use different layouts like 'spring_layout', 'tree_layout', etc.
+            #
+            #     # Plot the tree
+            #     plt.figure(figsize=(10, 7))
+            #     nx.draw(G, pos, with_labels=True, node_size=2000, node_color='skyblue', font_size=10,
+            #             font_weight='bold', arrows=False)
+            #     plt.title("Recursive KMeans Clustering Tree", fontsize=16)
+            #
+            # # After running the recursive_kmeans, call the function:
+            # plot_recursive_kmeans_tree(cluster_tree)
             
         # Lưu biểu đồ dendrogram vào bộ nhớ
         img = io.BytesIO()
