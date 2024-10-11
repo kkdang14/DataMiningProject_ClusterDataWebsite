@@ -1,4 +1,4 @@
-/* Style tổng quan */
+/* General Style */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -6,14 +6,15 @@ body {
     background-color: #f4f4f9;
 }
 
-/* Header và container */
+/* Header and Container */
 .container {
-    width: 80%;
+    width: 90%; /* Use a percentage width for better responsiveness */
+    max-width: 400px; /* Maximum width for larger screens */
     margin: 0 auto;
     padding: 20px;
     background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced shadow for depth */
+    border-radius: 15px; /* More rounded corners */
     margin-top: 40px;
     display: flex;
     flex-direction: column;
@@ -21,6 +22,7 @@ body {
     align-items: center;
 }
 
+/* Headings */
 h1 {
     font-size: 24px;
     color: #333;
@@ -35,12 +37,13 @@ p.lead {
     margin-bottom: 20px;
 }
 
-/* Form upload */
+/* Form Upload */
 .form-group {
     display: flex;
     justify-content: center;
     flex-direction: column;
     margin-bottom: 15px;
+    width: 100%; /* Ensure the form groups take full width */
 }
 
 label {
@@ -49,7 +52,7 @@ label {
     font-weight: bold;
 }
 
-input[type="file"], select {
+input[type="file"], select, input[type="number"] {
     width: 100%;
     padding: 10px;
     border: 1px solid #ddd;
@@ -77,7 +80,8 @@ button:hover {
 /* Media Queries for smaller screens */
 @media (max-width: 768px) {
     .container {
-        width: 90%;
+        width: 95%; /* Full width for smaller screens */
+        padding: 15px; /* Reduced padding */
     }
 
     h1 {
@@ -93,7 +97,7 @@ button:hover {
         font-size: 13px;
     }
 
-    input[type="file"], select {
+    input[type="file"], select, input[type="number"] {
         font-size: 13px;
     }
 }
@@ -101,7 +105,7 @@ button:hover {
 @media (max-width: 480px) {
     .container {
         width: 100%;
-        padding: 15px;
+        padding: 10px; /* Further reduced padding */
     }
 
     h1 {
@@ -117,7 +121,7 @@ button:hover {
         font-size: 12px;
     }
 
-    input[type="file"], select {
+    input[type="file"], select, input[type="number"] {
         font-size: 12px;
     }
 
