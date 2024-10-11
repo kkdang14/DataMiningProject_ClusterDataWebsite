@@ -8,6 +8,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import pdist, squareform
 # import networkx as nx
+from waitress import serve
 from sklearn.metrics import pairwise_distances
 from scipy.cluster.hierarchy import linkage, dendrogram
 from sklearn.preprocessing import OneHotEncoder
@@ -218,5 +219,7 @@ def download_file(file_type):
 
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0')
+    # app.run(debug=False, host='0.0.0.0')
     # app.run(debug=True, port=3001)
+    pass
+    # serve(app, host='0.0.0.0', port=8000)
