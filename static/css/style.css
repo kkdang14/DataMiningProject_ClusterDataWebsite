@@ -4,6 +4,9 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f4f4f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Header and Container */
@@ -78,7 +81,7 @@ button:hover {
 }
 
 /* Media Queries for smaller screens */
-@media (max-width: 768px) {
+@media (max-width: 954px) {
     .container {
         width: 95%; /* Full width for smaller screens */
         padding: 15px; /* Reduced padding */
