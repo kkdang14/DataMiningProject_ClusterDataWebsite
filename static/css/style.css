@@ -8,7 +8,7 @@ body {
 
 /* Header và container */
 .container {
-    width: 40%;
+    width: 80%;
     margin: 0 auto;
     padding: 20px;
     background-color: white;
@@ -22,25 +22,25 @@ body {
 }
 
 h1 {
-    font-size: 28px;
+    font-size: 24px;
     color: #333;
     margin-bottom: 10px;
+    text-align: center;
 }
 
 p.lead {
     text-align: center;
-    font-size: 16px;
+    font-size: 14px;
     color: #555;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 /* Form upload */
 .form-group {
     display: flex;
     justify-content: center;
-    /*align-items: center;*/
     flex-direction: column;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 label {
@@ -50,7 +50,7 @@ label {
 }
 
 input[type="file"], select {
-    width: 80%;
+    width: 100%;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -72,4 +72,56 @@ button {
 
 button:hover {
     background-color: #45a049;
+}
+
+/* Media Queries for smaller screens */
+@media (max-width: 768px) {
+    .container {
+        width: 90%;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    p.lead {
+        font-size: 13px;
+        margin-bottom: 15px;
+    }
+
+    label {
+        font-size: 13px;
+    }
+
+    input[type="file"], select {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: 100%;
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    p.lead {
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+
+    label {
+        font-size: 12px;
+    }
+
+    input[type="file"], select {
+        font-size: 12px;
+    }
+
+    button {
+        font-size: 12px;
+    }
 }

@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <title>Hierarchical Clustering</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <h1>Hierarchical Clustering</h1>
-        <p class="lead">Upload your dataset in CSV or Excel format and choose a clustering method to visualize the dendrogram.</p>
+        <p class="lead">Upload your dataset in CSV or Excel format, choose a number of cluster and a clustering method to visualize the dendrogram.</p>
 
         <!-- Form Upload -->
         <form action="/upload" method="post" enctype="multipart/form-data">

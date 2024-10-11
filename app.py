@@ -4,78 +4,103 @@ import base64
 import numpy as np
 import pandas as pd
 from flask import send_file
+import matplotlib
 import matplotlib.pyplot as plt
+from scipy.spatial.distance import pdist, squareform
+import networkx as nx
+from sklearn.metrics import pairwise_distances
 from scipy.cluster.hierarchy import linkage, dendrogram
-from flask import Flask, request, render_template
+from sklearn.preprocessing import OneHotEncoder
+from flask import Flask, request, render_template, send_from_directory
 from scipy.spatial.distance import pdist, squareform
 from sklearn.cluster import AgglomerativeClustering, KMeans, MiniBatchKMeans
 
 app = Flask(__name__)
+
+matplotlib.use('Agg')
 
 # Đường dẫn thư mục lưu trữ file trên server
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+def DiviseClustering(data, current_cluster, target_clusters, depth=0, tree=None):
+    if tree is None:
+        tree = []
 
-# Function to calculate SSE for a cluster
-def calculate_sse(data, labels):
-    sse = []
-    for i in np.unique(labels):
-        cluster_points = data[labels == i]
-        if len(cluster_points) > 0:
-            center = cluster_points.mean(axis=0)
-            sse.append(np.sum((cluster_points - center) ** 2))
-        else:
-            sse.append(0)
-    return np.array(sse)
+    if len(np.unique(current_cluster)) >= target_clusters:
+        return current_cluster, tree
 
+    for cluster_id in np.unique(current_cluster):
+        cluster_data = data[current_cluster == cluster_id]
 
-# Recursive function to perform the divisive clustering and splitting
-def top_down_clustering(data, num_clusters, cluster_id=0, labels=None, original_index=None):
-    if data is None:
-        raise ValueError("Data cannot be None in recursive_clustering function.")
+        if len(cluster_data) > 1:
+            # Compute dissimilarity (pairwise distance) matrix
+            dissimilarity_matrix = pairwise_distances(cluster_data)
 
-    # Initialize labels and original indices if not provided
-    if labels is None:
-        labels = np.zeros(data.shape[0], dtype=int)
-    if original_index is None:
-        original_index = np.arange(data.shape[0])
+            # Identify the most dissimilar point (with highest avg dissimilarity)
+            avg_dissimilarity = dissimilarity_matrix.mean(axis=1)
+            most_dissimilar_point = np.argmax(avg_dissimilarity)
 
-    print(f"Recursive clustering called with {len(data)} data points and {num_clusters} clusters.")
+            # Split the cluster based on dissimilarity
+            new_labels = np.zeros(len(cluster_data))
+            new_labels[most_dissimilar_point] = 1  # Assign the most dissimilar point to a new cluster
 
-    # Perform K-Means clustering with 2 clusters to split the cluster
-    kmeans = KMeans(n_clusters=2)
-    sub_labels = kmeans.fit_predict(data)
+            # Measure distance from the most dissimilar point
+            distances = dissimilarity_matrix[most_dissimilar_point]
+            new_labels[distances >= np.median(distances)] = 1  # Cluster the other points
 
-    # Calculate SSE for each cluster
-    sse = calculate_sse(data, sub_labels)
-    max_sse_index = np.argmax(sse)
-    print(f"Cluster {max_sse_index} has the highest SSE: {sse[max_sse_index]}")
+            # Relabel the clusters
+            new_cluster_ids = new_labels + np.max(current_cluster) + 1
+            current_cluster = current_cluster.copy()  # Sao chép tường minh nếu cần
+            current_cluster.loc[current_cluster == cluster_id] = new_cluster_ids
+
+            tree.append((depth, cluster_id, np.max(current_cluster) - 1, np.max(current_cluster)))
 
 
-    # Assign new labels in the original labels array
-    if len(labels) != len(original_index):
-        raise ValueError(f"Length mismatch: labels {len(labels)} vs. original_index {len(original_index)}")
+            # Stop if target clusters are achieved
+            if len(np.unique(current_cluster)) >= target_clusters:
+                break
 
-    labels[original_index[sub_labels == max_sse_index]] = cluster_id
+            # Recursively split the resulting clusters
+            current_cluster, tree = DiviseClustering(data, current_cluster, target_clusters, depth + 1, tree)
 
-    # If the current number of clusters is less than the target, split further
-    if cluster_id + 1 < num_clusters - 1:
-        for i in range(2):  # Loop through both sub-clusters
-            cluster_points = data[sub_labels == i]
-            new_index = original_index[sub_labels == i]
-            print(f"Splitting cluster {i} with {len(cluster_points)} points")
-            if len(cluster_points) > 0:
-                top_down_clustering(cluster_points, num_clusters, cluster_id + i, labels, new_index)
+    return current_cluster, tree
 
-    return labels
 
+def check_and_normalize_data(df):
+    # Kiểm tra các cột không phải là số
+    categorical_cols = df.select_dtypes(exclude=['int64', 'float64']).columns
+
+    if len(categorical_cols) > 0:
+        # Nếu có cột phân loại, thực hiện One-Hot Encoding
+        print(f"Các cột cần One-Hot Encoding: {list(categorical_cols)}")
+
+        # Thực hiện One-Hot Encoding
+        encoder = OneHotEncoder(sparse=False, drop='first')  # drop='first' để tránh multicollinearity
+        encoded_data = encoder.fit_transform(df[categorical_cols])
+
+        # Biến đổi kết quả từ One-Hot Encoding thành DataFrame
+        encoded_df = pd.DataFrame(encoded_data, columns=encoder.get_feature_names_out(categorical_cols))
+
+        # Kết hợp lại với các cột số đã có sẵn
+        df = pd.concat([df.select_dtypes(include=['float64', 'int64']), encoded_df], axis=1)
+        print(f"Sau khi chuẩn hóa, dữ liệu có các cột: {df.columns}")
+
+    else:
+        print("Dữ liệu đã đồng nhất, không cần One-Hot Encoding.")
+
+    return df
 
 # Trang chủ
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'static/favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 # Xử lý upload file và clustering
 @app.route('/upload', methods=['POST'])
@@ -91,6 +116,9 @@ def upload_file():
         else:
             df = pd.read_excel(file)
 
+        # Kiểm tra và chuẩn hóa dữ liệu
+        df = check_and_normalize_data(df)
+
         # Kiểm tra cột dữ liệu số
         numeric_data = df.select_dtypes(include=['float64', 'int64'])
         if numeric_data.empty:
@@ -100,36 +128,62 @@ def upload_file():
         if num_clusters > len(numeric_data):
             return f'Số lượng cụm ({num_clusters}) vượt quá số điểm dữ liệu ({len(numeric_data)}).'
 
+
         # Chọn phương pháp bottom-up hoặc top-down
         if method == 'bottom-up':
             Z = linkage(numeric_data, 'ward')
+
+            # Apply Agglomerative Clustering for num_clusters
             clustering = AgglomerativeClustering(n_clusters=num_clusters)
             df['Cluster'] = clustering.fit_predict(numeric_data)
+
             method_name = "Bottom-Up (Agglomerative)"
 
+            # Get the maximum distance at which to cut the dendrogram for num_clusters
             max_d = Z[-num_clusters, 2]
-            # Vẽ biểu đồ Dendrogram cho Bottom-up
+
+            # Plot the dendrogram
             plt.figure(figsize=(10, 7))
             plt.title(f"{method_name} Clustering Dendrogram")
-            dendrogram(Z, color_threshold=max_d)
-            plt.axhline(y=max_d, color='r', linestyle='-')
+
+            # Plot the dendrogram with a color threshold at max_d
+            dendrogram_data = dendrogram(Z, color_threshold=max_d)
+            print(dendrogram_data)
+
+            # Horizontal line to represent the maximum distance (cut point)
+            plt.axhline(y=max_d+1 , color='r', linestyle='-', linewidth=2)
 
         elif method == 'top-down':
-            # Áp dụng custom top-down divisive clustering
-            try:
-                Z = linkage(numeric_data, method='ward')
-                labels = top_down_clustering(numeric_data.to_numpy(), num_clusters)
-                df['Cluster'] = labels
-                method_name = "Top-Down (Divisive)"
-            except Exception as e:
-                return f"Error in top-down clustering: {str(e)}"
-            max_d = Z[-num_clusters, 2]
-            # Plot the dendrogram manually
-            plt.figure(figsize=(10, 7))
-            plt.title(f"{method_name} Clustering Dendrogram")
-            dendrogram(Z, color_threshold=max_d)
-            plt.axhline(y=max_d, color='r', linestyle='--')
+            # Simulate divisive clustering with recursive KMeans
+            df['Cluster'] = 0  # Start with one cluster
+            ## Function for recursive KMeans with a stopping condition
+            # Run the recursive KMeans
+            df['Cluster'], cluster_tree = DiviseClustering(numeric_data.values, df['Cluster'], num_clusters)
+            unique_labels = np.unique(df['Cluster'])
+            label_mapping = {old_label: new_label for new_label, old_label in enumerate(unique_labels)}
+            df['Cluster'] = df['Cluster'].map(label_mapping)
+            method_name = "Top-Down (Recursive KMeans)"
 
+            def plot_recursive_kmeans_tree(cluster_tree):
+                G = nx.DiGraph()  # Create a directed graph to represent the tree
+
+                # Iterate over the tree structure
+                for depth, parent, child1, child2 in cluster_tree:
+                    G.add_edge(f'Cluster {parent}', f'Cluster {child1}')
+                    G.add_edge(f'Cluster {parent}', f'Cluster {child2}')
+
+                # Set the layout of the tree
+                pos = nx.spring_layout(G, k=2, seed=42)  # You can use different layouts like 'spring_layout', 'tree_layout', etc.
+
+                # Plot the tree
+                plt.figure(figsize=(10, 7))
+                nx.draw(G, pos, with_labels=True, node_size=2000, node_color='skyblue', font_size=10,
+                        font_weight='bold', arrows=False)
+                plt.title("Recursive KMeans Clustering Tree", fontsize=16)
+
+            # After running the recursive_kmeans, call the function:
+            plot_recursive_kmeans_tree(cluster_tree)
+            
         # Lưu biểu đồ dendrogram vào bộ nhớ
         img = io.BytesIO()
         plt.savefig(img, format='png')
@@ -164,5 +218,5 @@ def download_file(file_type):
 
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0')
-    # app.run(debug=True)
+    # app.run(debug=False, host='0.0.0.0')
+    app.run(debug=True, port=3001)

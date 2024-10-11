@@ -13,6 +13,7 @@ h1 {
 
 h2 {
     color: #555;
+    text-align: center;
 }
 
 div {
@@ -75,7 +76,7 @@ tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-/* CSS cho nút thu gọn/mở rộng */
+/* CSS for the toggle button */
 .toggle-button {
     background-color: #4CAF50;
     color: white;
@@ -104,4 +105,71 @@ tr:nth-child(even) {
 
 .row-selector label {
     margin-right: 10px;
+}
+
+.comeback {
+    text-align: center;
+}
+
+/* Media Queries for responsiveness */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+
+    table, th, td {
+        font-size: 14px;
+        padding: 6px;
+    }
+
+    .toggle-button {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 5px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    h2 {
+        font-size: 16px;
+    }
+
+    button {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    table, th, td {
+        font-size: 12px;
+        padding: 5px;
+    }
+
+    .toggle-button {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .row-selector label {
+        font-size: 12px;
+    }
 }
