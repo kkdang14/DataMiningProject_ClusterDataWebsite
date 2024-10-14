@@ -125,7 +125,7 @@ tr:nth-child(even) {
 }
 
 /* Media Queries for responsiveness */
-@media (max-width: 768px) {
+@media (max-width: 954px) {
     body {
         padding: 10px;
     }
