@@ -6,6 +6,7 @@ import pandas as pd
 from flask import send_file
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 from scipy.spatial.distance import pdist, squareform
 # import networkx as nx
 from waitress import serve
@@ -14,7 +15,7 @@ from scipy.cluster.hierarchy import linkage, dendrogram
 from sklearn.preprocessing import OneHotEncoder
 from flask import Flask, request, render_template, send_from_directory
 from scipy.spatial.distance import pdist, squareform
-from sklearn.cluster import AgglomerativeClustering, KMeans, MiniBatchKMeans
+from sklearn.cluster import AgglomerativeClustering
 
 app = Flask(__name__)
 
@@ -25,6 +26,7 @@ UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
+# Divisive clustering algorithm and tracking the tree structure
 def DiviseClustering(data, current_cluster, target_clusters, depth=0, tree=None):
     if tree is None:
         tree = []
@@ -53,11 +55,11 @@ def DiviseClustering(data, current_cluster, target_clusters, depth=0, tree=None)
 
             # Relabel the clusters
             new_cluster_ids = new_labels + np.max(current_cluster) + 1
-            current_cluster = current_cluster.copy()  # Sao chép tường minh nếu cần
-            current_cluster.loc[current_cluster == cluster_id] = new_cluster_ids
+            current_cluster = current_cluster.copy()
+            current_cluster[current_cluster == cluster_id] = new_cluster_ids
 
+            # Track the split in the tree structure
             tree.append((depth, cluster_id, np.max(current_cluster) - 1, np.max(current_cluster)))
-
 
             # Stop if target clusters are achieved
             if len(np.unique(current_cluster)) >= target_clusters:
@@ -67,6 +69,47 @@ def DiviseClustering(data, current_cluster, target_clusters, depth=0, tree=None)
             current_cluster, tree = DiviseClustering(data, current_cluster, target_clusters, depth + 1, tree)
 
     return current_cluster, tree
+
+# Function to plot divisive clustering tree using networkx
+# Function to plot dendrogram like AGNES tree
+def plot_tree_dendrogram(tree, num_clusters):
+    fig, ax = plt.subplots(figsize=(12, 8))
+    x_coords = {}
+    y_levels = {}
+
+    # Color map để mỗi level có màu khác nhau
+    colors = list(mcolors.TABLEAU_COLORS.values())
+
+    for (depth, parent, child1, child2) in tree:
+        if parent not in x_coords:
+            x_coords[parent] = parent
+
+        # Tạo khoảng cách cho các nhánh không bị trùng
+        x_coords[child1] = x_coords[parent] - 1
+        x_coords[child2] = x_coords[parent] + 1
+
+        # Chọn màu theo depth
+        color = colors[depth % len(colors)]
+
+        # Vẽ đường ngang (để hiển thị độ sâu phân cụm trên trục y)
+        ax.plot([x_coords[child1], x_coords[child2]], [depth, depth], color=color, lw=2)
+
+        # Vẽ đường dọc xuống các nhánh
+        ax.plot([x_coords[child1], x_coords[child1]], [depth, depth + 1], color=color, lw=2)
+        ax.plot([x_coords[child2], x_coords[child2]], [depth, depth + 1], color=color, lw=2)
+
+        # Ghi chú các cụm tại điểm phân nhánh
+        ax.text(x_coords[child1], depth + 1.05, f'Cluster {child1}', verticalalignment='center', color=color, fontsize=10)
+        ax.text(x_coords[child2], depth + 1.05, f'Cluster {child2}', verticalalignment='center', color=color, fontsize=10)
+
+    # Cài đặt tiêu đề và trục
+    ax.set_title("Divisive Clustering Dendrogram (Inverted Clustering)", fontsize=16)
+    ax.set_ylabel("Depth of Clustering", fontsize=14)
+    ax.set_xlabel("Cluster ID", fontsize=14)
+    ax.invert_yaxis()
+    # Thiết lập phạm vi trục x để không bị cắt bớt
+    ax.set_xlim(min(x_coords.values()) - 1, max(x_coords.values()) + 1)
+    return fig
 
 
 def check_and_normalize_data(df):
@@ -132,10 +175,10 @@ def upload_file():
 
         # Chọn phương pháp bottom-up hoặc top-down
         if method == 'bottom-up':
-            Z = linkage(numeric_data, 'ward')
-
             # Apply Agglomerative Clustering for num_clusters
             clustering = AgglomerativeClustering(n_clusters=num_clusters)
+            Z = linkage(numeric_data, 'ward')
+
             df['Cluster'] = clustering.fit_predict(numeric_data)
 
             method_name = "Bottom-Up (Agglomerative)"
@@ -144,7 +187,7 @@ def upload_file():
             max_d = Z[-num_clusters, 2]
 
             # Plot the dendrogram
-            plt.figure(figsize=(10, 7))
+            plt.figure(figsize=(12, 8))
             plt.title(f"{method_name} Clustering Dendrogram")
 
             # Plot the dendrogram with a color threshold at max_d
@@ -165,25 +208,7 @@ def upload_file():
             df['Cluster'] = df['Cluster'].map(label_mapping)
             method_name = "Top-Down (Recursive KMeans)"
 
-            # def plot_recursive_kmeans_tree(cluster_tree):
-            #     G = nx.DiGraph()  # Create a directed graph to represent the tree
-            #
-            #     # Iterate over the tree structure
-            #     for depth, parent, child1, child2 in cluster_tree:
-            #         G.add_edge(f'Cluster {parent}', f'Cluster {child1}')
-            #         G.add_edge(f'Cluster {parent}', f'Cluster {child2}')
-            #
-            #     # Set the layout of the tree
-            #     pos = nx.spring_layout(G, k=2, seed=42)  # You can use different layouts like 'spring_layout', 'tree_layout', etc.
-            #
-            #     # Plot the tree
-            #     plt.figure(figsize=(10, 7))
-            #     nx.draw(G, pos, with_labels=True, node_size=2000, node_color='skyblue', font_size=10,
-            #             font_weight='bold', arrows=False)
-            #     plt.title("Recursive KMeans Clustering Tree", fontsize=16)
-            #
-            # # After running the recursive_kmeans, call the function:
-            # plot_recursive_kmeans_tree(cluster_tree)
+            fig = plot_tree_dendrogram(cluster_tree, num_clusters)
             
         # Lưu biểu đồ dendrogram vào bộ nhớ
         img = io.BytesIO()
@@ -210,15 +235,18 @@ def upload_file():
 def download_file(file_type):
     if file_type == 'dendrogram':
         file_path = os.path.join(UPLOAD_FOLDER, 'dendrogram.png')
+        file_name = 'dendrogram.png'
     elif file_type == 'result':
         file_path = os.path.join(UPLOAD_FOLDER, 'clustering_result.csv')
+        file_name = 'clustering_result.csv'
     else:
         return 'File không tồn tại.'
 
-    return send_file(file_path, as_attachment=True)
+        # Set 'as_attachment=True' to trigger download dialog in the browser
+    return send_file(file_path, as_attachment=True, download_name=file_name)
 
 
 if __name__ == '__main__':
     # app.run(debug=False, host='0.0.0.0')
-    # app.run(debug=True, port=3001)
+    app.run(debug=True, port=3001)
     pass
