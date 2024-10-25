@@ -6,15 +6,15 @@ body {
     background-color: #f4f4f9;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-evenly;
     height: 92vh;
 }
 
 /* Header and Container */
 .container {
     width: 90%; /* Use a percentage width for better responsiveness */
-    max-width: 400px; /* Maximum width for larger screens */
-    margin: 0 auto;
+    max-width: 550px; /* Maximum width for larger screens */
+    /*margin: 0 auto;*/
     padding: 20px;
     background-color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced shadow for depth */
@@ -25,7 +25,6 @@ body {
     justify-content: center;
     align-items: center;
 }
-
 /* Headings */
 h1 {
     font-size: 24px;
@@ -72,6 +71,7 @@ button {
     color: white;
     border: none;
     border-radius: 5px;
+    margin-bottom: 10px;
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.3s ease;
