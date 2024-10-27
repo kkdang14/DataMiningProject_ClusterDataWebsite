@@ -2,6 +2,7 @@ import io
 import os
 import base64
 import secrets
+import tempfile
 
 import numpy as np
 import pandas as pd
@@ -11,6 +12,8 @@ import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import linkage, dendrogram
 from flask import Flask, request, render_template, send_from_directory, flash, redirect, url_for
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.metrics import silhouette_score
+
 from controller.Divise import DiviseClustering, plot_tree_dendrogram
 from controller.preprocessing import check_and_normalize_data
 
@@ -35,6 +38,37 @@ def home():
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'static/favicon.ico', mimetype='image/vnd.microsoft.icon')
+@app.route('/check', methods=['POST'])
+def checking_cluster():
+    file = request.files['file-checking']
+    if file and (file.filename.endswith('.csv') or file.filename.endswith('.xlsx')):
+        # Đọc dữ liệu từ file CSV hoặc Excel
+        if file.filename.endswith('.csv'):
+            df = pd.read_csv(file)
+        else:
+            df = pd.read_excel(file)
+
+        # Kiểm tra cột dữ liệu số
+        numeric_data = df.select_dtypes(include=['float64', 'int64'])
+
+        if numeric_data.empty:
+            flash('Dataset không có cột số để gom nhóm.', 'warning')
+            return redirect(url_for('home'))# Kiểm tra cột dữ liệu số
+        # Automatically determine optimal clusters with silhouette scores
+        max_clusters = min(10, len(df))  # Set an upper limit for computation efficiency
+        best_clusters = 2
+        best_score = -1
+
+        for n in range(2, max_clusters):
+            model = AgglomerativeClustering(n_clusters=n)
+            labels = model.fit_predict(df)
+            score = silhouette_score(df, labels)
+            if score > best_score:
+                best_score = score
+                best_clusters = n
+
+            flash(f'Optimal number of clusters determined to be {best_clusters}.', 'info')
+            return redirect(url_for('home'))
 
 @app.route('/cluster', methods=['POST'])
 def cluster():

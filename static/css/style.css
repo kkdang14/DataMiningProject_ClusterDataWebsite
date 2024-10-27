@@ -12,8 +12,7 @@ body {
 
 /* Header and Container */
 .container {
-    width: 90%; /* Use a percentage width for better responsiveness */
-    max-width: 550px; /* Maximum width for larger screens */
+    width: 70%; /* Use a percentage width for better responsiveness */
     /*margin: 0 auto;*/
     padding: 20px;
     background-color: white;
@@ -26,6 +25,10 @@ body {
     align-items: center;
 }
 /* Headings */
+.container-title{
+
+}
+
 h1 {
     font-size: 24px;
     color: #333;
@@ -35,9 +38,38 @@ h1 {
 
 p.lead {
     text-align: center;
-    font-size: 14px;
+    font-size: 16px;
     color: #555;
     margin-bottom: 20px;
+}
+
+h3{
+    color: #4CAF50;
+}
+
+.container-handle{
+    display: flex;
+    width: 100%;
+    justify-content: space-evenly;
+}
+
+.container-checking{
+    display: flex;
+    padding: 10px;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+}
+
+.container-cluster{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 30px;
+     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
 }
 
 /* Form Upload */
@@ -81,11 +113,21 @@ button:hover {
     background-color: #45a049;
 }
 
-/* Media Queries for smaller screens */
+/* Media Queries for Tablets */
 @media (max-width: 954px) {
     .container {
-        width: 95%; /* Full width for smaller screens */
-        padding: 15px; /* Reduced padding */
+        width: 95%;
+        padding: 15px;
+    }
+
+    .container-handle {
+        flex-direction: column;
+    }
+
+    .container-checking, .container-cluster {
+        width: 100%;
+        margin-bottom: 20px;
+        padding: 0;
     }
 
     h1 {
@@ -93,23 +135,24 @@ button:hover {
     }
 
     p.lead {
-        font-size: 13px;
+        font-size: 14px;
         margin-bottom: 15px;
     }
 
-    label {
-        font-size: 13px;
-    }
-
-    input[type="file"], select, input[type="number"] {
+    label, input[type="file"], select, input[type="number"], button {
         font-size: 13px;
     }
 }
 
+.container-notification{
+    margin: 20px;
+}
+
+/* Media Queries for Mobile */
 @media (max-width: 480px) {
     .container {
         width: 100%;
-        padding: 10px; /* Further reduced padding */
+        /*padding: 10px;*/
     }
 
     h1 {
@@ -121,15 +164,7 @@ button:hover {
         margin-bottom: 10px;
     }
 
-    label {
-        font-size: 12px;
-    }
-
-    input[type="file"], select, input[type="number"] {
-        font-size: 12px;
-    }
-
-    button {
+    label, input[type="file"], select, input[type="number"], button {
         font-size: 12px;
     }
 }
