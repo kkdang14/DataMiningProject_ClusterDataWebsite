@@ -3,19 +3,21 @@ import os
 import base64
 import secrets
 import tempfile
-
 import numpy as np
 import pandas as pd
 from flask import send_file, session
 import matplotlib
 import matplotlib.pyplot as plt
+from werkzeug.utils import secure_filename
 from scipy.cluster.hierarchy import linkage, dendrogram
 from flask import Flask, request, render_template, send_from_directory, flash, redirect, url_for
-from sklearn.cluster import AgglomerativeClustering
+from sklearn.cluster import AgglomerativeClustering, KMeans, DBSCAN
 from sklearn.metrics import silhouette_score
-
-from controller.Divise import DiviseClustering, plot_tree_dendrogram
+from controller.Divise import DiviseClustering
+from controller.visualize import plot_tree_dendrogram
 from controller.preprocessing import check_and_normalize_data
+from controller.BestCluster import best_number_of_cluster
+
 
 app = Flask(__name__, template_folder="templates")
 secret_key = secrets.token_hex(16)
@@ -40,114 +42,141 @@ def favicon():
                                'static/favicon.ico', mimetype='image/vnd.microsoft.icon')
 @app.route('/check', methods=['POST'])
 def checking_cluster():
+    # file = request.files['file-checking']
+    # if file and (file.filename.endswith('.csv') or file.filename.endswith('.xlsx')):
+    #     # Đọc dữ liệu từ file CSV hoặc Excel
+    #     if file.filename.endswith('.csv'):
+    #         df = pd.read_csv(file)
+    #     else:
+    #         df = pd.read_excel(file)
+
     file = request.files['file-checking']
     if file and (file.filename.endswith('.csv') or file.filename.endswith('.xlsx')):
-        # Đọc dữ liệu từ file CSV hoặc Excel
-        if file.filename.endswith('.csv'):
-            df = pd.read_csv(file)
-        else:
-            df = pd.read_excel(file)
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)  # Save the file to the server
+        session['uploaded_file_path'] = file_path  # Save file path in session
+    else:
+        flash('Invalid file. Please upload a CSV or Excel file.', 'danger')
+        return redirect(url_for('home'))
 
-        # Kiểm tra cột dữ liệu số
-        numeric_data = df.select_dtypes(include=['float64', 'int64'])
+    # Read data from the saved file
+    if file.filename.endswith('.csv'):
+        df = pd.read_csv(file_path)
+    else:
+        df = pd.read_excel(file_path)
 
-        if numeric_data.empty:
-            flash('Dataset không có cột số để gom nhóm.', 'warning')
-            return redirect(url_for('home'))# Kiểm tra cột dữ liệu số
-        # Automatically determine optimal clusters with silhouette scores
-        max_clusters = min(10, len(df))  # Set an upper limit for computation efficiency
-        best_clusters = 2
-        best_score = -1
+    # Normalize data
+    df = check_and_normalize_data(df)
 
-        for n in range(2, max_clusters):
-            model = AgglomerativeClustering(n_clusters=n)
-            labels = model.fit_predict(df)
-            score = silhouette_score(df, labels)
-            if score > best_score:
-                best_score = score
-                best_clusters = n
+    # Check for numeric data columns
+    numeric_data = df.select_dtypes(include=['float64', 'int64'])
+    if numeric_data.empty:
+        flash('Dataset does not contain numeric columns for clustering.', 'warning')
+        return redirect(url_for('home'))
 
-            flash(f'Optimal number of clusters determined to be {best_clusters}.', 'info')
-            return redirect(url_for('home'))
+    best_clusters = best_number_of_cluster(df)
+
+    flash(f'Optimal number of clusters determined to be {best_clusters}.', 'info')
+    return redirect(url_for('home'))
+
 
 @app.route('/cluster', methods=['POST'])
 def cluster():
-    file = request.files['file']
+    file = session.get('uploaded_file_path')
+    if 'file' in request.files and request.files['file']:
+        # If a new file is uploaded in this form submission, use it
+        file = request.files['file']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)  # Save the new file
+        session['uploaded_file_path'] = file_path  # Update session path to new file
+    elif file:
+        # If no new file uploaded, but there is a file from previous check
+        file_path = file
+    else:
+        flash("No file found. Please check or upload a dataset first.", 'warning')
+        return redirect(url_for('home'))
+
     method = request.form.get('method')
     num_clusters = int(request.form.get('num_clusters', 3))
-    if file and (file.filename.endswith('.csv') or file.filename.endswith('.xlsx')):
-        # Đọc dữ liệu từ file CSV hoặc Excel
-        if file.filename.endswith('.csv'):
-            df = pd.read_csv(file)
-        else:
-            df = pd.read_excel(file)
 
-        df = check_and_normalize_data(df)
+    # Read data from the saved file
+    if file_path.endswith('.csv'):
+        df = pd.read_csv(file_path)
+    else:
+        df = pd.read_excel(file_path)
 
-        # Kiểm tra cột dữ liệu số
-        numeric_data = df.select_dtypes(include=['float64', 'int64'])
+    # Remove the file after reading it
+    os.remove(file_path)
 
-        if numeric_data.empty:
-            flash('Dataset không có cột số để gom nhóm.', 'warning')
-            return redirect(url_for('home'))
+    # Normalize data
+    df = check_and_normalize_data(df)
 
-        if num_clusters > len(df):
-            flash(f'The number of clusters ({num_clusters}) exceeds the number of data points ({len(df)}).', 'warning')
-            return redirect(url_for('home'))
+    # Kiểm tra cột dữ liệu số
+    numeric_data = df.select_dtypes(include=['float64', 'int64'])
 
-        if method == 'bottom-up':
-            # Apply Agglomerative Clustering for num_clusters
-            clustering = AgglomerativeClustering(n_clusters=num_clusters, metric='euclidean')
-            Z = linkage(df, 'ward')
+    if numeric_data.empty:
+        flash('Dataset không có cột số để gom nhóm.', 'warning')
+        return redirect(url_for('home'))
 
-            df['Cluster'] = clustering.fit_predict(df)
+    if num_clusters > len(df):
+        flash(f'The number of clusters ({num_clusters}) exceeds the number of data points ({len(df)}).', 'warning')
+        return redirect(url_for('home'))
 
-            method_name = "Bottom-Up (Agglomerative)"
+    if method == 'bottom-up':
+        # Apply Agglomerative Clustering for num_clusters
+        clustering = AgglomerativeClustering(n_clusters=num_clusters, metric='euclidean')
+        Z = linkage(df, 'ward')
 
-            # Get the maximum distance at which to cut the dendrogram for num_clusters
-            max_d = Z[-num_clusters, 2]
+        df['Cluster'] = clustering.fit_predict(df)
 
-            # Plot the dendrogram
-            plt.figure(figsize=(12, 8))
-            plt.title(f"{method_name} Clustering Dendrogram")
+        method_name = "Bottom-Up (Agglomerative)"
 
-            # Plot the dendrogram with a color threshold at max_d
-            dendrogram_data = dendrogram(Z, color_threshold=max_d)
-            print(dendrogram_data)
+        # Get the maximum distance at which to cut the dendrogram for num_clusters
+        max_d = Z[-num_clusters, 2]
 
-            # Horizontal line to represent the maximum distance (cut point)
-            plt.axhline(y=max_d+1 , color='r', linestyle='-', linewidth=2)
+        # Plot the dendrogram
+        plt.figure(figsize=(12, 8))
+        plt.title(f"{method_name} Clustering Dendrogram")
 
-        elif method == 'top-down':
+        # Plot the dendrogram with a color threshold at max_d
+        dendrogram_data = dendrogram(Z, color_threshold=max_d)
+        print(dendrogram_data)
 
-            df['Cluster'] = 0  # Start with one cluster
-            df['Cluster'], cluster_tree = DiviseClustering(df.values, df['Cluster'], num_clusters)
-            unique_labels = np.unique(df['Cluster'])
-            label_mapping = {old_label: new_label for new_label, old_label in enumerate(unique_labels)}
-            df['Cluster'] = df['Cluster'].map(label_mapping)
-            method_name = "Top-Down (Recursive KMeans)"
+        # Horizontal line to represent the maximum distance (cut point)
+        plt.axhline(y=max_d+1 , color='r', linestyle='-', linewidth=2)
 
-            fig = plot_tree_dendrogram(cluster_tree, num_clusters)
+    elif method == 'top-down':
 
-            # Lưu biểu đồ dendrogram vào bộ nhớ
-        img = io.BytesIO()
-        plt.savefig(img, format='png')
-        img.seek(0)
-        plot_url = base64.b64encode(img.getvalue()).decode('utf8')
-        # Lưu biểu đồ dendrogram vào file
-        plot_filename = os.path.join(UPLOAD_FOLDER, 'dendrogram.png')
-        plt.savefig(plot_filename)  # Lưu vào file dendrogram.png
+        df['Cluster'] = 0  # Start with one cluster
+        df['Cluster'], cluster_tree = DiviseClustering(df.values, df['Cluster'], num_clusters)
+        unique_labels = np.unique(df['Cluster'])
+        label_mapping = {old_label: new_label for new_label, old_label in enumerate(unique_labels)}
+        df['Cluster'] = df['Cluster'].map(label_mapping)
+        method_name = "Top-Down (Recursive KMeans)"
+
+        fig = plot_tree_dendrogram(cluster_tree, num_clusters)
+
+        # Lưu biểu đồ dendrogram vào bộ nhớ
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plot_url = base64.b64encode(img.getvalue()).decode('utf8')
+    # Lưu biểu đồ dendrogram vào file
+    plot_filename = os.path.join(UPLOAD_FOLDER, 'dendrogram.png')
+    plt.savefig(plot_filename)  # Lưu vào file dendrogram.png
 
 
-        # Lưu kết quả phân cụm vào file CSV
-        result_filename = os.path.join(UPLOAD_FOLDER, 'clustering_result.csv')
-        df.to_csv(result_filename, index=False)  # Lưu kết quả vào file CSV
+    # Lưu kết quả phân cụm vào file CSV
+    result_filename = os.path.join(UPLOAD_FOLDER, 'clustering_result.csv')
+    df.to_csv(result_filename, index=False)  # Lưu kết quả vào file CSV
 
-        # Trả về kết quả dưới dạng HTML với nút tải xuống
-        return render_template('result.html', table=df.to_html(),
-                                method=method_name,
-                                plot_url='/download/dendrogram',
-                                result_url='/download/result')
+    # Trả về kết quả dưới dạng HTML với nút tải xuống
+    return render_template('result.html', table=df.to_html(),
+                            method=method_name,
+                            plot_url='/download/dendrogram',
+                            result_url='/download/result')
 
     flash('Invalid file type. Please upload a CSV or Excel file.', 'danger')
     return redirect(url_for('home'))

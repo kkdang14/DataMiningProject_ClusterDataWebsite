@@ -35,8 +35,3 @@ function showRows() {
 window.onload = function() {
     showRows();
 };
-
-
-document.getElementById("file-input").addEventListener("change", function() {
-    document.getElementById("upload-form").submit();
-});
