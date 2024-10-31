@@ -13,8 +13,7 @@ from scipy.cluster.hierarchy import linkage, dendrogram
 from flask import Flask, request, render_template, send_from_directory, flash, redirect, url_for
 from sklearn.cluster import AgglomerativeClustering, KMeans, DBSCAN
 from sklearn.metrics import silhouette_score
-from controller.Divise import DiviseClustering
-from controller.visualize import plot_tree_dendrogram
+from controller.Divisive import DivisiveClustering
 from controller.preprocessing import check_and_normalize_data
 from controller.BestCluster import best_number_of_cluster
 
@@ -139,24 +138,35 @@ def cluster():
         # Plot the dendrogram
         plt.figure(figsize=(12, 8))
         plt.title(f"{method_name} Clustering Dendrogram")
-
         # Plot the dendrogram with a color threshold at max_d
         dendrogram_data = dendrogram(Z, color_threshold=max_d)
+        plt.gca().invert_yaxis()
         print(dendrogram_data)
 
         # Horizontal line to represent the maximum distance (cut point)
         plt.axhline(y=max_d+1 , color='r', linestyle='-', linewidth=2)
 
     elif method == 'top-down':
-
+        Z = linkage(df, 'ward')
         df['Cluster'] = 0  # Start with one cluster
-        df['Cluster'], cluster_tree = DiviseClustering(df.values, df['Cluster'], num_clusters)
+        df['Cluster'], cluster_tree = DivisiveClustering(df.values, df['Cluster'], num_clusters)
         unique_labels = np.unique(df['Cluster'])
         label_mapping = {old_label: new_label for new_label, old_label in enumerate(unique_labels)}
         df['Cluster'] = df['Cluster'].map(label_mapping)
-        method_name = "Top-Down (Recursive KMeans)"
+        method_name = "Top-Down (Divisive Clustering)"
 
-        fig = plot_tree_dendrogram(cluster_tree, num_clusters)
+        max_d = Z[-num_clusters, 2]
+
+        # Plot the dendrogram
+        plt.figure(figsize=(12, 8))
+        plt.title(f"{method_name} Clustering Dendrogram")
+
+        # Plot the dendrogram with a color threshold at max_d
+        dendrogram_data = dendrogram(Z, color_threshold=max_d)
+        print(dendrogram_data)
+
+        # Horizontal line to represent the maximum distance (cut point)
+        plt.axhline(y=max_d + 1, color='r', linestyle='-', linewidth=2)
 
         # Lưu biểu đồ dendrogram vào bộ nhớ
     img = io.BytesIO()
