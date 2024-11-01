@@ -2,7 +2,7 @@
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
-def best_number_of_cluster(data):
+def find_best_number_of_cluster(data):
     max_clusters = min(10, len(data))  # Set an upper limit for efficiency
     best_clusters = 2
     best_score = -1

@@ -15,7 +15,7 @@ from sklearn.cluster import AgglomerativeClustering, KMeans, DBSCAN
 from sklearn.metrics import silhouette_score
 from controller.Divisive import DivisiveClustering
 from controller.preprocessing import check_and_normalize_data
-from controller.BestCluster import best_number_of_cluster
+from controller.FindBestCluster import find_best_number_of_cluster
 
 
 app = Flask(__name__, template_folder="templates")
@@ -74,7 +74,7 @@ def checking_cluster():
         flash('Dataset does not contain numeric columns for clustering.', 'warning')
         return redirect(url_for('home'))
 
-    best_clusters = best_number_of_cluster(df)
+    best_clusters = find_best_number_of_cluster(df)
 
     flash(f'Optimal number of clusters determined to be {best_clusters}.', 'info')
     return redirect(url_for('home'))
@@ -208,5 +208,5 @@ def download_file(file_type):
 if __name__ == '__main__':
     # app.run(debug=True)
     # app.run(debug=False, host='0.0.0.0')
-    # app.run(debug=True, port=3001)
-    pass
+    app.run(debug=True, port=3001)
+    # pass
