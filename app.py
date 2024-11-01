@@ -103,8 +103,11 @@ def cluster():
     # Read data from the saved file
     if file_path.endswith('.csv'):
         df = pd.read_csv(file_path)
-    else:
+    elif file_path.endswith('.xlsx'):
         df = pd.read_excel(file_path)
+    else:
+        flash('Dataset does not match the required file type', 'warning')
+        return redirect(url_for('home'))
 
     # Remove the file after reading it
     os.remove(file_path)
@@ -116,7 +119,7 @@ def cluster():
     numeric_data = df.select_dtypes(include=['float64', 'int64'])
 
     if numeric_data.empty:
-        flash('Dataset không có cột số để gom nhóm.', 'warning')
+        flash('Dataset is not column for clustering.', 'warning')
         return redirect(url_for('home'))
 
     if num_clusters > len(df):
@@ -208,5 +211,5 @@ def download_file(file_type):
 if __name__ == '__main__':
     # app.run(debug=True)
     # app.run(debug=False, host='0.0.0.0')
-    app.run(debug=True, port=3001)
-    # pass
+    # app.run(debug=True, port=3001)
+    pass
