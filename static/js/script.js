@@ -1,37 +1,28 @@
-function toggleTable() {
-    var tableDiv = document.getElementById("cluster-table");
-    var button = document.querySelector('.toggle-button');
-    if (tableDiv.classList.contains('hidden')) {
-        tableDiv.classList.remove('hidden');
+// Hàm để ẩn/hiện bảng và thay đổi nội dung nút
+function toggleTable(tableId, button) {
+    const tableDiv = document.getElementById(tableId);
+    if (tableDiv.style.display === 'none' || !tableDiv.style.display) {
+        tableDiv.style.display = 'block';
         button.textContent = 'Ẩn Bảng Dữ Liệu';
     } else {
-        tableDiv.classList.add('hidden');
+        tableDiv.style.display = 'none';
         button.textContent = 'Hiện Bảng Dữ Liệu';
     }
 }
 
-function showRows() {
-    var rowCount = document.getElementById('rowCount').value;
-    var table = document.querySelector('#cluster-table table');
-    var rows = table.querySelectorAll('tbody tr');
+// Hàm để hiển thị số lượng dòng dựa trên lựa chọn
+function showRows(tableId) {
+    const rowCount = document.getElementById(tableId === 'cluster-table' ? 'rowCount' : 'stepRowCount').value;
+    const table = document.querySelector(`#${tableId} table`);
+    const rows = table.querySelectorAll('tbody tr');
 
-    if (rowCount === 'all') {
-        rows.forEach(function(row) {
-            row.style.display = '';
-        });
-        return;
-    }
-
-    rowCount = parseInt(rowCount, 10);
-    rows.forEach(function(row, index) {
-        if (index < rowCount) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
+    rows.forEach((row, index) => {
+        row.style.display = (rowCount === 'all' || index < rowCount) ? '' : 'none';
     });
 }
 
+// Khởi tạo hiển thị mặc định
 window.onload = function() {
-    showRows();
+    showRows('cluster-table');
+    showRows('step-table');
 };

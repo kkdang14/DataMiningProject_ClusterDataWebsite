@@ -13,14 +13,56 @@
         <img src="{{ plot_url }}" alt="Dendrogram">
         <button><a href="{{ plot_url }}" download="dendrogram.png">Tải xuống Dendrogram</a></button>
     </div>
+
+        <div>
+        <h2>Chi tiết Các Bước Gom Nhóm</h2>
+
+        <button class="toggle-button" onclick="toggleTable('step-table', this)">Ẩn/Hiện Chi Tiết Bước</button>
+
+        <div class="row-selector">
+            <label for="stepRowCount">Số dòng hiển thị:</label>
+            <select id="stepRowCount" onchange="showRows('step-table')">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="all">Tất cả</option>
+            </select>
+        </div>
+
+        <div id="step-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bước</th>
+                        <th>Cụm 1</th>
+                        <th>Cụm 2</th>
+                        <th>Khoảng cách</th>
+                        <th>Kích thước cụm mới</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for step in clustering_steps %}
+                    <tr>
+                        <td>{{ step.Step }}</td>
+                        <td>{{ step['Cluster 1'] }}</td>
+                        <td>{{ step['Cluster 2'] }}</td>
+                        <td>{{ step.Distance }}</td>
+                        <td>{{ step['New Cluster Size'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <div>
         <h2>Kết quả Phân Cụm</h2>
 
-        <button class="toggle-button" onclick="toggleTable()">Ẩn/Hiện Bảng Dữ Liệu</button>
+        <button class="toggle-button" onclick="toggleTable('cluster-table', this)">Ẩn/Hiện Bảng Dữ Liệu</button>
 
         <div class="row-selector">
             <label for="rowCount">Số dòng hiển thị:</label>
-            <select id="rowCount" onchange="showRows()">
+            <select id="rowCount" onchange="showRows('cluster-table')">
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="20">20</option>

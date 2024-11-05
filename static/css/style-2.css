@@ -1,22 +1,22 @@
-/* General Style */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f9;
     margin: 0;
     padding: 20px;
     line-height: 1.6;
+    height: auto;
 }
 
 h1 {
     color: #333;
     text-align: center;
-    font-size: 24px; /* Larger heading size */
+    font-size: 24px;
 }
 
 h2 {
     color: #555;
     text-align: center;
-    font-size: 20px; /* Consistent heading size */
+    font-size: 20px;
 }
 
 div {
@@ -27,7 +27,6 @@ div {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Image Styles */
 img {
     display: block;
     margin: 0 auto;
@@ -36,7 +35,6 @@ img {
     border-radius: 8px;
 }
 
-/* Button Styles */
 button {
     background-color: #4CAF50;
     color: white;
@@ -49,21 +47,10 @@ button {
     cursor: pointer;
     border-radius: 5px;
     transition: background-color 0.3s ease;
-    width: 15%; /* Full-width buttons for mobile */
+    width: 15%;
 }
 
-button:hover {
-    background-color: #45a049;
-}
 
-/* Link Styles */
-a {
-    color: white;
-    text-decoration: none;
-    width: 100%;
-}
-
-/* Table Styles */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -81,12 +68,28 @@ th {
     text-align: left;
 }
 
-/* Alternate Row Color */
 tr:nth-child(even) {
     background-color: #f9f9f9;
 }
 
-/* Toggle Button Styles */
+/* Responsive Table */
+@media (max-width: 768px) {
+    th, td {
+        font-size: 14px;
+        padding: 6px;
+    }
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+a {
+    color: white;
+    text-decoration: none;
+    width: 100%;
+}
+
 .toggle-button {
     background-color: #4CAF50;
     color: white;
@@ -99,19 +102,13 @@ tr:nth-child(even) {
     cursor: pointer;
     border-radius: 5px;
     transition: background-color 0.3s ease;
-    width: 20%; /* Full-width for mobile */
+    width: 20%;
 }
 
 .toggle-button:hover {
     background-color: #45a049;
 }
 
-/* Hidden Class */
-.hidden {
-    display: none;
-}
-
-/* Row Selector Styles */
 .row-selector {
     margin-bottom: 20px;
 }
@@ -120,12 +117,10 @@ tr:nth-child(even) {
     margin-right: 10px;
 }
 
-/* Comeback Button Style */
 .comeback {
     text-align: center;
 }
 
-/* Media Queries for responsiveness */
 @media (max-width: 954px) {
     body {
         padding: 10px;

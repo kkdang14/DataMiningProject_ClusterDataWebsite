@@ -1,9 +1,8 @@
-# Automatically determine optimal clusters with silhouette scores
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
 def find_best_number_of_cluster(data):
-    max_clusters = min(10, len(data))  # Set an upper limit for efficiency
+    max_clusters = min(10, len(data))
     best_clusters = 2
     best_score = -1
 
