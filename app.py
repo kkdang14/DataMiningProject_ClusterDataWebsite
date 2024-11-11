@@ -181,7 +181,7 @@ def cluster():
 
         for step in cluster_tree:
             clustering_steps.append({
-                "Step": str(step[0]),
+                "Step": str(step[0] + 1),
                 "Cluster Id": step[1],
                 "Cluster 1": step[2],
                 "Cluster 2": step[3],
@@ -230,5 +230,5 @@ def download_file(file_type):
 
 
 if __name__ == '__main__':
-    # app.run(debug=True, port=3001)
-    pass
+    app.run(debug=True, port=3001)
+    # pass

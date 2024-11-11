@@ -34,7 +34,7 @@ def DivisiveClustering(data, current_cluster, target_clusters, depth=0, tree=Non
             current_cluster = current_cluster.copy()
             current_cluster[current_cluster == cluster_id] = new_cluster_ids
 
-            tree.append((depth + 1, cluster_id, np.max(new_cluster_ids), np.min(new_cluster_ids), np.median(distances), len(cluster_data)))
+            tree.append((depth, cluster_id, np.max(new_cluster_ids), np.min(new_cluster_ids), np.median(distances), len(cluster_data)))
 
             # Kiểm tra nếu đã đạt đủ số lượng cụm
             if len(np.unique(current_cluster)) >= target_clusters:
