@@ -166,7 +166,7 @@ def cluster():
         print(dendrogram_data)
 
         # Tạo đường cắt ngang, xác định và trực quan hóa ngưỡng phân cụm trong dendrogram
-        plt.axhline(y=max_d+1 , color='r', linestyle='-', linewidth=2)
+        plt.axhline(y=max_d+0.5 , color='r', linestyle='-', linewidth=2)
 
     elif method == 'top-down':
         df['Cluster'] = 0  # Bắt đầu với cụm không
@@ -230,5 +230,5 @@ def download_file(file_type):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=3001)
-    # pass
+    # app.run(debug=True, port=3001)
+    pass

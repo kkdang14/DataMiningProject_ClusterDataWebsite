@@ -7,25 +7,25 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
-    <h1>Kết quả Phân Cụm: {{ method }}</h1>
+    <h1>Clustering Result: {{ method }}</h1>
     <div>
-        <h2>Biểu đồ Dendrogram</h2>
+        <h2>Dendrogram Chart</h2>
         <img src="{{ plot_url }}" alt="Dendrogram">
-        <button><a href="{{ plot_url }}" download="dendrogram.png">Tải xuống Dendrogram</a></button>
+        <button><a href="{{ plot_url }}" download="dendrogram.png">Download Dendrogram</a></button>
     </div>
 
         <div>
-        <h2>Chi tiết Các Bước Gom Nhóm</h2>
+        <h2>Details Of Clustering Steps</h2>
 
-        <button class="toggle-button" onclick="toggleTable('step-table', this)">Ẩn/Hiện Chi Tiết Bước</button>
+        <button class="toggle-button" onclick="toggleTable('step-table', this)">Show/Hide Table Data</button>
 
         <div class="row-selector">
-            <label for="stepRowCount">Số dòng hiển thị:</label>
+            <label for="stepRowCount">Line Number Displayed:</label>
             <select id="stepRowCount" onchange="showRows('step-table')">
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="20">20</option>
-                <option value="all">Tất cả</option>
+                <option value="all">All</option>
             </select>
         </div>
 
@@ -33,11 +33,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Bước</th>
-                        <th>Cụm 1</th>
-                        <th>Cụm 2</th>
-                        <th>Khoảng cách</th>
-                        <th>Kích thước cụm mới</th>
+                        <th>Step</th>
+                        <th>Cluster 1</th>
+                        <th>Cluster 2</th>
+                        <th>Distance</th>
+                        <th>New cluster size</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -56,17 +56,17 @@
     </div>
 
     <div>
-        <h2>Kết quả Phân Cụm</h2>
+        <h2>Result Table Data After Clustering:</h2>
 
-        <button class="toggle-button" onclick="toggleTable('cluster-table', this)">Ẩn/Hiện Bảng Dữ Liệu</button>
+        <button class="toggle-button" onclick="toggleTable('cluster-table', this)">Show/Hide Table Data</button>
 
         <div class="row-selector">
-            <label for="rowCount">Số dòng hiển thị:</label>
+            <label for="rowCount">Line Number Displayed:</label>
             <select id="rowCount" onchange="showRows('cluster-table')">
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="20">20</option>
-                <option value="all">Tất cả</option>
+                <option value="all">All</option>
             </select>
         </div>
 
@@ -74,7 +74,7 @@
             {{ table | safe }}
         </div>
 
-        <button><a href="{{ result_url }}" download="clustering_result.csv">Tải xuống Kết quả</a></button>
+        <button><a href="{{ result_url }}" download="clustering_result.csv">Download File</a></button>
     </div>
 
     <div class="comeback">
