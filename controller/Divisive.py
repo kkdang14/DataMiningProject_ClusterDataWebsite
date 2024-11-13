@@ -22,7 +22,7 @@ def DivisiveClustering(data, current_cluster, target_clusters, depth=0, tree=Non
             # Tính độ không tương đồng trung bình
             avg_dissimilarity = dissimilarity_matrix.mean(axis=1)
             most_dissimilar_point = np.argmax(avg_dissimilarity)
-
+            print(most_dissimilar_point)
             # Tách cụm
             new_labels = np.zeros(len(cluster_data))
             new_labels[most_dissimilar_point] = 1
@@ -34,7 +34,7 @@ def DivisiveClustering(data, current_cluster, target_clusters, depth=0, tree=Non
             current_cluster = current_cluster.copy()
             current_cluster[current_cluster == cluster_id] = new_cluster_ids
 
-            tree.append((depth, cluster_id, np.max(new_cluster_ids), np.min(new_cluster_ids), np.median(distances), len(cluster_data)))
+            tree.append((depth, cluster_id, np.min(new_cluster_ids), np.max(new_cluster_ids), np.median(distances), len(cluster_data)))
 
             # Kiểm tra nếu đã đạt đủ số lượng cụm
             if len(np.unique(current_cluster)) >= target_clusters:
