@@ -69,7 +69,7 @@ def checking_cluster():
     # Tìm số cụm tối ưu nhất cho dữ liệu
     best_clusters = find_best_number_of_cluster(df)
 
-    flash(f'Optimal number of clusters determined to be {best_clusters}.', 'info')
+    flash(f'Dataset was saved, optimal number of clusters determined to be {best_clusters}.', 'info')
     return redirect(url_for('home'))
 
 
