@@ -186,6 +186,7 @@ def cluster():
                 "Cluster 1": step[2],
                 "Cluster 2": step[3],
                 "Distance": step[4],
+                "New Cluster Size": step[5]
             })
 
         fig = plot_divisive_clustering(cluster_tree, num_clusters)

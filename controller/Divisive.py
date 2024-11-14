@@ -33,6 +33,7 @@ def DivisiveClustering(data, current_cluster, target_clusters, depth=0, tree=Non
             new_cluster_ids = new_labels + np.max(current_cluster) + 1
             current_cluster = current_cluster.copy()
             current_cluster[current_cluster == cluster_id] = new_cluster_ids
+            cluster_sizes = np.bincount(current_cluster.astype(int))
 
             tree.append((depth, cluster_id, np.min(new_cluster_ids), np.max(new_cluster_ids), np.median(distances), len(cluster_data)))
 
